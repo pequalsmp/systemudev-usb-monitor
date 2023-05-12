@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "systemudev-usb-monitor"
+version = "0.1.0"
+description = "Start systemd user service based on USB bind/unbind event"
+authors = [
+    "pequalsmp <945480+pequalsmp@users.noreply.github.com>"
+]
+readme = "README.md"
+packages = [{include = "systemudev_usb_monitor"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+typer = "^0.9.0"
+pyusb = "^1.2.1"
+pyudev = "^0.24.1"
+dbus-python = "^1.3.2"
+
+[tool.poetry.scripts]
+systemudev-usb-monitor = "systemudev_usb_monitor:cli"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

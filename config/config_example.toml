@@ -1,0 +1,3 @@
+devices = [
+	{ "service"="example-service", "vid"="1234", "pid"="4321" }
+]
