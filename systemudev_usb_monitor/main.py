@@ -9,6 +9,13 @@ class Udev:
     def __init__(self, devices):
         self.devices = devices
 
+    def __is_usb_device_initialized(udev_object):
+        return (
+            udev_object.get("ID_MODEL")
+            and udev_object.get("ID_MODEL_ID")
+            and udev_object.get("ID_VENDOR_ID")
+        )
+
     def handle_service(name, state):
         bus = dbus.SessionBus()
 
@@ -39,11 +46,7 @@ class Udev:
             service_state = "active"
 
             # wait until the sound system has initialized the device
-            if (
-                udev_object.get("ID_MODEL")
-                and udev_object.get("ID_MODEL_ID")
-                and udev_object.get("ID_VENDOR_ID")
-            ):
+            if self.__is_usb_device_initialized(udev_object):
                 model = bytes(udev_object.get("ID_MODEL_ENC"), "utf-8").decode(
                     "unicode_escape"
                 )
@@ -61,22 +64,13 @@ class Udev:
         self.handle_service(device["service"], service_state)
 
     def handle_event(self, udev_object):
-        if udev_object.action == "bind":
+        if udev_object.action in ("bind", "unbind"):
             for device in self.devices:
-                if "{}/{}".format(device["vid"], device["pid"]) in udev_object.get(
-                    "PRODUCT"
-                ):
-                    self.handle_action(udev_object, device)
-
-        if udev_object.action == "unbind":
-            for device in self.devices:
-                if "{}/{}".format(device["vid"], device["pid"]) in udev_object.get(
-                    "PRODUCT"
-                ):
+                if udev_object.get("PRODUCT") in f"{device['vid']}/{device['pid']}":
                     self.handle_action(udev_object, device)
 
     def run(self):
-        # check if something is already connected
+        # check if a device is already connected
         for device in self.devices:
             # TODO: if >1 device matches {V,P}ID (model,vid,pid)
             dev = usb.core.find(
